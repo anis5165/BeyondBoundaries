@@ -3,27 +3,27 @@ import { useFormik } from 'formik';
 import React from 'react'
 import toast from "react-hot-toast";
 import axios from 'axios';
-const ClientDetailsForm = () => {
+const BusinessOwnerDetailsForm = () => {
 
 
     const detailsForm = useFormik({
         initialValues: {
-            name: '',
+            fullName: '',
             email: '',
             country: '',
-            companyName: '',
-            industry: '',
+            businessName: '',
+            businessType: '',
             businessRegNo: '',
             website: '',
             linkedin: '',
-            experienceYears: '',
-            investmentCapacity: '',
-            availability: '',
-            helpDescription: ''
+            annualRevenue: '',
+            expansionCountry: '',
+            investmentBudget: '',
+            businessPlan: ''
         },
         onSubmit: (values, { resetForm }) => {
             console.log(values)
-            axios.post('http://localhost:5000/clientdetails/add', values)
+            axios.post('http://localhost:5000/businessOwner/add', values)
                 .then((result) => {
                     console.log(result.status)
                     resetForm();
@@ -34,13 +34,35 @@ const ClientDetailsForm = () => {
                 });
         }
     }
-
     )
+
+    const upload = (e) => {
+
+        const file = e.target.files[0];
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', 'Mernbatch8')
+        fd.append('colud_name', 'dgx8094we')
+
+        axios.post('https://api.cloudinary.com/v1_1/dgx8094we/image/upload', fd)
+            .then((result) => {
+                toast.success('file upload successfully');
+                console.log(result.data);
+                detailsForm.setFieldValue('image', result.data.url);
+            }).catch((err) => {
+                console.log(err);
+                toast.error('failed to upload file');
+
+            });
+
+
+
+    }
 
     return (
         <>
             <div className='my-16 flex flex-col justify-center items-center'>
-                <h2 className='text-5xl font-bold '>Client Profile</h2>
+                <h2 className='text-5xl font-bold '>Business Owner Profile</h2>
                 <h5 className='bg-[#F7EDE8] py-3 mt-2 px-24 rounded'>Please Fill Correct Details</h5>
                 <div className='max-w-[80%] mt-10 mx-auto p-8 border border-[black] rounded'>
                     <form action="" onSubmit={detailsForm.handleSubmit}>
@@ -48,12 +70,12 @@ const ClientDetailsForm = () => {
                             <h2 className='text-xl font-semibold'>Personal Information</h2>
                             <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                                 <span>
-                                    <label htmlFor="name" className='text-lg mr-3'>Name: </label>
+                                    <label htmlFor="fullName" className='text-lg mr-3'>FullName: </label>
                                     <input
                                         type="text"
-                                        id='name'
+                                        id='fullName'
                                         onChange={detailsForm.handleChange}
-                                        value={detailsForm.values.name}
+                                        value={detailsForm.values.fullName}
                                         className='border-2 w-full md:w-2/3 border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter your name'
                                     />
@@ -91,31 +113,31 @@ const ClientDetailsForm = () => {
                             <h2 className='text-xl font-semibold'>Business Details</h2>
                             <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                                 <span className='col-span-1'>
-                                    <label htmlFor="companyName" className='text-lg mr-3'>Company Name:</label>
+                                    <label htmlFor="businessName" className='text-lg mr-3'>businessName:</label>
                                     <input
                                         type="text"
-                                        id='companyName'
+                                        id='businessName'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.companyName}
+                                        values={detailsForm.values.businessName}
                                         className='border-2 w-full md:w-auto border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter your company name'
                                     />
                                 </span>
 
                                 <span className='col-span-1'>
-                                    <label htmlFor="industry" className='text-lg mr-3'>Industry/Sector:</label>
+                                    <label htmlFor="businessType" className='text-lg mr-3'>businessType:</label>
                                     <input
                                         type="text"
-                                        id='industry'
+                                        id='businessType'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.industry}
+                                        values={detailsForm.values.businessType}
                                         className='border-2 w-full md:w-auto border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter your industry/sector'
                                     />
                                 </span>
 
                                 <span className='col-span-1'>
-                                    <label htmlFor="businessRegNo" className='text-lg mr-3'>Business Registration No.:</label>
+                                    <label htmlFor="businessRegNo" className='text-lg mr-3'>businessRegNo:</label>
                                     <input
                                         type="text"
                                         id='businessRegNo'
@@ -128,9 +150,7 @@ const ClientDetailsForm = () => {
                                 </span>
                             </div>
                         </div>
-                        <hr />
-                        <div className='my-5'>
-                            <h2 className='text-xl font-semibold'>Project Requirements</h2>
+                        <div className='mb-5'>
                             <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                                 <span>
                                     <label htmlFor="website" className='text-lg mr-3'>website: </label>
@@ -155,45 +175,45 @@ const ClientDetailsForm = () => {
                                     />
                                 </span>
                                 <span>
-                                    <label htmlFor="experienceYears" className='text-lg mr-3'>experienceYears: </label>
+                                    <label htmlFor="annualRevenue" className='text-lg mr-3'>annualRevenue: </label>
                                     <input
                                         type="text"
-                                        id='experienceYears'
+                                        id='annualRevenue'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.experienceYears}
+                                        values={detailsForm.values.annualRevenue}
                                         className='border-2 w-full md:w-1/2 border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter budget range'
                                     />
                                 </span>
                                 <span>
-                                    <label htmlFor="investmentCapacity" className='text-lg mr-3'>investmentCapacity: </label>
+                                    <label htmlFor="expansionCountry" className='text-lg mr-3'>expansionCountry: </label>
                                     <input
                                         type="text"
-                                        id='investmentCapacity'
+                                        id='expansionCountry'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.investmentCapacity}
+                                        values={detailsForm.values.expansionCountry}
                                         className='border-2 w-full md:w-auto border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter preferred start and end dates'
                                     />
                                 </span>
                                 <span>
-                                    <label htmlFor="availability" className='text-lg mr-3'>availability: </label>
+                                    <label htmlFor="investmentBudget" className='text-lg mr-3'>investmentBudget: </label>
                                     <input
                                         type="text"
-                                        id='availability'
+                                        id='investmentBudget'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.availability}
+                                        values={detailsForm.values.investmentBudget}
                                         className='border-2 w-full md:w-auto border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter specific skills'
                                     />
                                 </span>
                                 <span>
-                                    <label htmlFor="helpDescription" className='text-lg mr-3'>helpDescription: </label>
+                                    <label htmlFor="businessPlan" className='text-lg mr-3'>businessPlan: </label>
                                     <input
-                                        type="text"
-                                        id='helpDescription'
+                                        type="file"
+                                        id='businessPlan'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.helpDescription}
+                                        values={detailsForm.values.businessPlan}
                                         className='border-2 w-full md:w-1/2 border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter expertise required'
                                     />
@@ -230,4 +250,4 @@ const ClientDetailsForm = () => {
     )
 }
 
-export default ClientDetailsForm
+export default BusinessOwnerDetailsForm
