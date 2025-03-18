@@ -1,10 +1,12 @@
 'use client';
 import { useFormik } from 'formik';
-import React from 'react'
+import React, { useState } from 'react'
 import toast from "react-hot-toast";
 import axios from 'axios';
 const BusinessOwnerDetailsForm = () => {
 
+
+    const [businessPlan, setBusinessPlan] = useState(null)
 
     const detailsForm = useFormik({
         initialValues: {
@@ -48,7 +50,7 @@ const BusinessOwnerDetailsForm = () => {
             .then((result) => {
                 toast.success('file upload successfully');
                 console.log(result.data);
-                detailsForm.setFieldValue('image', result.data.url);
+                setBusinessPlan(result.data.url);
             }).catch((err) => {
                 console.log(err);
                 toast.error('failed to upload file');
@@ -208,12 +210,14 @@ const BusinessOwnerDetailsForm = () => {
                                     />
                                 </span>
                                 <span>
-                                    <label htmlFor="businessPlan" className='text-lg mr-3'>businessPlan: </label>
+                                    <label htmlFor="businessPlan" className='text-lg mr-3'>businessPlan:
+                                        <input type="file" id='upload' onChange={upload} />    
+                                    </label>
                                     <input
-                                        type="file"
+                                        type="text"
                                         id='businessPlan'
                                         onChange={detailsForm.handleChange}
-                                        values={detailsForm.values.businessPlan}
+                                        values={businessPlan}
                                         className='border-2 w-full md:w-1/2 border-[#F8F8F9] rounded-md py-1 px-2'
                                         placeholder='Enter expertise required'
                                     />
