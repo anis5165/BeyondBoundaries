@@ -4,7 +4,7 @@ const BusinessOwnerSchema = new Schema({
     email: {type: String, require: true, unique: true},
     country: {type: String, require: true},
     businessName: {type: String, require: true},
-    BusinessType: {type: String, require: true},
+    businessType: {type: String, require: true},
     businessRegNo: {type: String, require: true},
     website: {type: String},
     linkedin: {type: String},

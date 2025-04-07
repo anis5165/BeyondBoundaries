@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import Navbar from "@/components/Navbar";
 
 export const metadata = {
   title: "BeyondBoundaries",
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <Toaster position="top-right"/>
+        <Navbar/>
         {children}
       </body>
     </html>
