@@ -25,4 +25,17 @@ router.get('/getall', async (req, res) => {
     }
 });
 
+router.get('/getbyid/:id', async (req, res) => {
+    try {
+        const owner = await BusinessOwner.findById(req.params.id);
+        if (!owner) {
+            return res.status(404).json({ message: 'Owner not found' });
+        }
+        res.json(owner);
+    } catch (error) {
+        console.error('Error fetching owner by ID:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

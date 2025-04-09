@@ -13,7 +13,7 @@ const Login = () => {
         },
         onSubmit: async (values, { resetForm }) => {
             try {
-                const response = await axios.post('http://localhost:5000/user/login', values);
+                const response = await axios.post('http://localhost:5000/user/authenticate', values);
                 console.log(response.status);
                 resetForm();
                 toast.success('Login Successful');

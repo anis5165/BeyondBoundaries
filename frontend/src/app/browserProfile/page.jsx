@@ -7,6 +7,7 @@ import { FaLinkedin, FaGlobe } from 'react-icons/fa'
 const BrowserPage = () => {
     const [businessOwner, setBusinessOwner] = useState([])
     const [loading, setLoading] = useState(true)
+    const [selectedBusinessType, setSelectedBusinessType] = useState('all')
 
     const fetchBrowser = async () => {
         try {
@@ -29,6 +30,14 @@ const BrowserPage = () => {
         fetchBrowser();
     }, []);
 
+    // Get unique business types
+    const businessTypes = ['all', ...new Set(businessOwner.map(owner => owner.businessType))];
+
+    // Filter business owners based on selected type
+    const filteredBusinessOwners = selectedBusinessType === 'all' 
+        ? businessOwner
+        : businessOwner.filter(owner => owner.businessType === selectedBusinessType);
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -42,9 +51,25 @@ const BrowserPage = () => {
             <div className='mt-28 px-4'>
                 <div className='text-center'>
                     <h1 className='text-7xl font-semibold'>Business Profiles</h1>
+                    
+                    {/* Business Type Filter */}
+                    <div className='mt-8'>
+                        <select 
+                            value={selectedBusinessType}
+                            onChange={(e) => setSelectedBusinessType(e.target.value)}
+                            className='px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500'
+                        >
+                            {businessTypes.map((type) => (
+                                <option key={type} value={type}>
+                                    {type === 'all' ? 'All Business Types' : type}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
+
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 mx-10'>
-                    {businessOwner.map((owner) => (
+                    {filteredBusinessOwners.map((owner) => (
                         <div key={owner._id} className='shadow-xl bg-white rounded-lg p-6 hover:shadow-2xl transition-shadow'>
                             <div className='flex items-center gap-4'>
                                 <div className='w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center'>
@@ -57,11 +82,14 @@ const BrowserPage = () => {
                             </div>
                             
                             <div className='mt-4 space-y-2'>
-                                <p className='text-gray-700'><span className='font-medium'>Business Type:</span> {owner.businessType}</p>
+                                <p className='text-gray-700'>
+                                    <span className='font-medium'>Business Type:</span> 
+                                    <span className='ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm'>
+                                        {owner.businessType}
+                                    </span>
+                                </p>
                                 <p className='text-gray-700'><span className='font-medium'>Country:</span> {owner.country}</p>
                                 <p className='text-gray-700'><span className='font-medium'>Target Expansion:</span> {owner.expansionCountry}</p>
-                                {/* <p className='text-gray-700'><span className='font-medium'>Annual Revenue:</span> {owner.annualRevenue}</p>
-                                <p className='text-gray-700'><span className='font-medium'>Investment Budget:</span> {owner.investmentBudget}</p> */}
                             </div>
 
                             <div className='mt-4 flex gap-2'>
@@ -98,9 +126,14 @@ const BrowserPage = () => {
                         </div>
                     ))}
                 </div>
-                {businessOwner.length === 0 && !loading && (
+
+                {filteredBusinessOwners.length === 0 && !loading && (
                     <div className='text-center mt-10'>
-                        <p className='text-gray-500 text-xl'>No business owners found</p>
+                        <p className='text-gray-500 text-xl'>
+                            {selectedBusinessType === 'all' 
+                                ? 'No business owners found' 
+                                : `No business owners found for type: ${selectedBusinessType}`}
+                        </p>
                     </div>
                 )}
             </div>

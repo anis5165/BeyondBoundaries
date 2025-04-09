@@ -38,8 +38,8 @@ const Navbar = () => {
                         <Link href="/businessOwnerDetailsForm" className="text-gray-200 hover:text-gray-400 px-3 py-2 rounded-md">
                             BusinessOwner
                         </Link>
-                        <Link href="/clientDetailsForm" className="text-gray-200 hover:text-gray-400 px-3 py-2 rounded-md">
-                            Client
+                        <Link href="/partnerDetailsForm" className="text-gray-200 hover:text-gray-400 px-3 py-2 rounded-md">
+                            PartnerForm
                         </Link>
                     </div>
 
