@@ -82,7 +82,7 @@ const BusinessProfile = () => {
                         {/* Business Plan */}
                         <div>
                             <h2 className="text-xl font-semibold mb-4">Business Plan</h2>
-                            <Link href={profile.businessPlan} className="text-gray-700 whitespace-pre-wrap">{profile.businessPlan}</Link>
+                            <Link href={profile.businessPlan} className="bg-blue-600 text-white whitespace-pre-wrap px-6 py-2 rounded-lg" target='_blank'>View</Link>
                         </div>
 
                         {/* Social Links */}

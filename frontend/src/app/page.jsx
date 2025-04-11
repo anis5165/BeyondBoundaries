@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { Globe, Users, CheckCircle, MessageCircle } from 'lucide-react';
+import ChatApp from '@/components/ChatApp';
 
 const LandingPage = () => {
   const [email, setEmail] = useState('');
@@ -34,18 +35,18 @@ const LandingPage = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
             Bridge the gap between global ambitions and local expertise. Find trusted partners who understand regional markets and help your business thrive internationally.
           </p>
-          
+
           <form onSubmit={handleEmailSubmit} className="max-w-md mx-auto flex">
-            <input 
-              type="email" 
-              placeholder="Enter your business email" 
+            <input
+              type="email"
+              placeholder="Enter your business email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="flex-grow px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-blue-600 text-white px-6 py-3 rounded-r-lg hover:bg-blue-700 transition"
             >
               Get Started
@@ -84,6 +85,10 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className='mx-24 mb-10'>
+        <ChatApp />
       </section>
 
       {/* How It Works Section */}
