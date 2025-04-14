@@ -5,17 +5,24 @@ const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/verifyToken');
 require('dotenv').config();
 
-router.post('/add', (req,res) => {
-    console.log(req.body);
+router.post('/add', async (req, res) => {
+    try {
+        const newUser = new Model(req.body);
+        const savedUser = await newUser.save();
 
-    new Model(req.body).save()
-    .then((result) => {
-        res.json(result);
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).json({error: "Internal Server Error"});
-    });
-})
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: savedUser._id, email: savedUser.email, role: savedUser.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({ user: savedUser, token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Registration failed' });
+    }
+});
 
 router.get('/getall', (req,res) => {
     Model.find()

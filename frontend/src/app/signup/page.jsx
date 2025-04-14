@@ -1,16 +1,19 @@
 'use client'
 import { useFormik } from 'formik'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 import toast from 'react-hot-toast'
 import axios from 'axios'
 import * as Yup from 'yup'
 
 const Signup = () => {
+    const router = useRouter()
+
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
         email: Yup.string().email('Invalid email').required('Email is required'),
         role: Yup.string().oneOf(['business', 'partner'], 'Please select a role').required('Role is required'),
-        password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required')
+        password: Yup.s////////tring().min(6, 'Password must be at least 6 characters').required('Password is required')
     });
 
     const SignupForm = useFormik({
@@ -24,9 +27,19 @@ const Signup = () => {
         onSubmit: async (values, { resetForm }) => {
             try {
                 const response = await axios.post('http://localhost:5000/user/add', values);
-                console.log(response.status);
+                
+                // Store user data in localStorage
+                localStorage.setItem('user', JSON.stringify(response.data));
+                
                 resetForm();
-                toast.success('User Registered Successfully');
+                toast.success('Registration Successful');
+
+                // Redirect based on role
+                if (values.role === 'business') {
+                    router.push('/businessOwnerDetailsForm');
+                } else if (values.role === 'partner') {
+                    router.push('/partnerDetailsForm');
+                }
             } catch (err) {
                 console.error(err);
                 toast.error(err.response?.data?.message || 'Registration Failed');
