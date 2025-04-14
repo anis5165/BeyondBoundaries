@@ -5,10 +5,12 @@ import { useParams } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { FaLinkedin, FaGlobe, FaArrowLeft } from 'react-icons/fa'
 import Link from 'next/link'
+import ChatApp from '@/components/ChatApp'
 
 const BusinessProfile = () => {
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [showChat, setShowChat] = useState(false)
     const { id } = useParams()
 
     const fetchProfile = async () => {
@@ -111,14 +113,33 @@ const BusinessProfile = () => {
                     </div>
                 </div>
 
-                {/* Contact Button */}
-                <div className="mt-6 text-center">
-                    <button
-                        className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                        onClick={() => window.location.href = `/contact/${profile._id}`}
-                    >
-                        Contact Business Owner
-                    </button>
+                {/* Contact Section */}
+                <div className="mt-6 space-y-4">
+                    <div className="flex justify-center gap-4">
+                        <button
+                            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                            onClick={() => window.location.href = `mailto:${profile.email}`}
+                        >
+                            Send Email
+                        </button>
+                        <button
+                            className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                            onClick={() => setShowChat(!showChat)}
+                        >
+                            {showChat ? 'Close Chat' : 'Open Chat'}
+                        </button>
+                    </div>
+
+                    {/* Chat Component */}
+                    {showChat && (
+                        <div className="fixed bottom-0 right-4 w-96 h-[600px] bg-white shadow-2xl rounded-t-lg">
+                            <ChatApp 
+                                receiverId={profile._id}
+                                receiverName={profile.fullName}
+                                onClose={() => setShowChat(false)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

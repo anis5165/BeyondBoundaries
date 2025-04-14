@@ -3,67 +3,99 @@ import { io } from 'socket.io-client'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
-const ChatApp = () => {
-    const [messages, setMessages] = useState([])
-    const [newMessage, setNewMessage] = useState('')
-    const [socket, setSocket] = useState(null)
-    const messagesEndRef = useRef(null)
-    const [user, setUser] = useState(null)
+const ChatApp = ({ receiverId, receiverName, onClose }) => {
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [socket, setSocket] = useState(null);
+    const messagesEndRef = useRef(null);
+    const [user, setUser] = useState(null);
 
-    // Initialize socket connection
     useEffect(() => {
-        const newSocket = io('http://localhost:5000')
-        setSocket(newSocket)
+        try {
+            const newSocket = io('http://localhost:5000');
+            setSocket(newSocket);
 
-        // Get user from localStorage
-        const userData = JSON.parse(localStorage.getItem('user'))
-        setUser(userData)
+            // Get user from localStorage
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (userData) {
+                setUser(userData);
+                
+                // Join chat room
+                const chatRoom = [userData._id, receiverId].sort().join('-');
+                newSocket.emit('join chat', chatRoom);
 
-        return () => newSocket.close()
-    }, [])
+                // Load chat history
+                fetchChatHistory(userData._id, receiverId);
+            }
+
+            return () => newSocket.close();
+        } catch (error) {
+            console.error('Socket connection error:', error);
+            toast.error('Failed to connect to chat server');
+        }
+    }, [receiverId]);
+
+    const fetchChatHistory = async (userId1, userId2) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/message/chat/${userId1}/${userId2}`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching chat history:', error);
+            toast.error('Failed to load chat history');
+        }
+    };
 
     // Scroll to bottom of messages
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     useEffect(() => {
-        scrollToBottom()
-    }, [messages])
+        scrollToBottom();
+    }, [messages]);
 
-    // Listen for messages
+    // Listen for private messages
     useEffect(() => {
-        if (!socket) return
+        if (!socket) return;
 
-        socket.on('message', (message) => {
-            setMessages(prev => [...prev, message])
-        })
+        socket.on('private message', (message) => {
+            setMessages(prev => [...prev, message]);
+        });
 
         return () => {
-            socket.off('message')
-        }
-    }, [socket])
+            socket.off('private message');
+        };
+    }, [socket]);
 
     const sendMessage = (e) => {
-        e.preventDefault()
-        if (!newMessage.trim()) return
+        e.preventDefault();
+        if (!newMessage.trim()) return;
 
         const messageData = {
             text: newMessage,
             sender: user?._id,
             senderName: user?.name,
             timestamp: new Date().toISOString()
-        }
+        };
 
-        socket?.emit('message', messageData)
-        setNewMessage('')
-    }
+        socket?.emit('private message', messageData);
+        setNewMessage('');
+    };
 
     return (
-        <div className="flex flex-col h-[80vh] max-w-2xl mx-auto mt-28 shadow-lg rounded-lg">
+        <div className="flex flex-col h-full">
             {/* Chat Header */}
-            <div className="bg-blue-600 text-white px-4 py-3 rounded-t-lg">
-                <h2 className="text-xl font-semibold">Chat Room</h2>
+            <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
+                <div>
+                    <h2 className="text-xl font-semibold">Chat with {receiverName}</h2>
+                    {user && <p className="text-sm">You: {user.name}</p>}
+                </div>
+                <button 
+                    onClick={onClose}
+                    className="text-white hover:text-gray-200"
+                >
+                    ×
+                </button>
             </div>
 
             {/* Messages Container */}
@@ -80,8 +112,7 @@ const ChatApp = () => {
                                     : 'bg-gray-200'
                             }`}
                         >
-                            <p className="text-sm font-semibold">{message.senderName}</p>
-                            <p>{message.text}</p>
+                            <p className="break-words">{message.text}</p>
                             <p className="text-xs text-right mt-1 opacity-70">
                                 {new Date(message.timestamp).toLocaleTimeString()}
                             </p>
@@ -103,7 +134,8 @@ const ChatApp = () => {
                     />
                     <button
                         type="submit"
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        disabled={!user}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                     >
                         Send
                     </button>

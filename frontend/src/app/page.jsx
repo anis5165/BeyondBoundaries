@@ -14,18 +14,6 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      {/* <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold text-blue-600">BeyondBoundaries</div>
-          <div className="space-x-6">
-            <a href="#features" className="text-gray-800 hover:text-blue-600">Features</a>
-            <a href="#how-it-works" className="text-gray-800 hover:text-blue-600">How It Works</a>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition">Get Started</button>
-          </div>
-        </div>
-      </nav> */}
-
       {/* Hero Section */}
       <header className="pt-24 pb-16 bg-gradient-to-b mt-10 from-blue-50 to-white">
         <div className="container mx-auto px-4 text-center">
@@ -85,10 +73,6 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
-      </section>
-
-      <section className='mx-24 mb-10'>
-        <ChatApp />
       </section>
 
       {/* How It Works Section */}

@@ -69,6 +69,9 @@ const Navbar = () => {
                             </Link>
                             <Link href="/contact" className="text-gray-200 hover:bg-gray-100 block px-3 py-2 rounded-md">
                                 Contact
+                                <Link href="/browserProfile" className="text-gray-200 hover:text-gray-400 px-3 py-2 rounded-md">
+                                    BusinessProfile
+                                </Link>
                             </Link>
                             <Link href="/businessOwnerDetailsForm" className="text-gray-200 hover:text-gray-400 px-3 py-2 rounded-md">
                                 BusinessOwner
