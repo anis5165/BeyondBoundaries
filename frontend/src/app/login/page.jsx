@@ -1,10 +1,13 @@
 'use client';
 import axios from 'axios';
 import { useFormik } from 'formik';
+import { useRouter } from 'next/navigation';
 import React from 'react'
 import toast from 'react-hot-toast';
 
 const Login = () => {
+
+    const router = useRouter()
 
     const loginForm = useFormik({
         initialValues: {
@@ -15,6 +18,7 @@ const Login = () => {
             try {
                 const response = await axios.post('http://localhost:5000/user/authenticate', values);
                 console.log(response.status);
+                router.push('/');
                 resetForm();
                 toast.success('Login Successful');
             } catch (err) {

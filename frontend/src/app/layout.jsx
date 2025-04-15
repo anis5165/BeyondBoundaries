@@ -1,7 +1,9 @@
+// 'use client'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata = {
   title: "BeyondBoundaries",
@@ -11,12 +13,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-      </head>
       <body>
-        <Toaster position="top-right"/>
-        <Navbar/>
-        {children}
+        <AuthProvider>
+          <Navbar />
+          <main>
+            {children}
+          </main>
+          <Toaster position="top-right" />
+        </AuthProvider>
       </body>
     </html>
   );
