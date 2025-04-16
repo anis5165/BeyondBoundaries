@@ -2,22 +2,36 @@ const express = require('express');
 const router = express.Router();
 const Model = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const verifyToken = require('../middleware/verifyToken');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
+// Signup route
 router.post('/add', async (req, res) => {
     try {
-        const newUser = new Model(req.body);
+        const { password, ...rest } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const newUser = new Model({
+            ...rest,
+            password: hashedPassword
+        });
+        
         const savedUser = await newUser.save();
-
-        // Generate JWT token
         const token = jwt.sign(
-            { id: savedUser._id, email: savedUser.email, role: savedUser.role },
+            { id: savedUser._id, email: savedUser.email, role: savedUser.role, name: savedUser.name },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        res.json({ user: savedUser, token });
+        res.json({ 
+            member: {
+                _id: savedUser._id,
+                name: savedUser.name,
+                email: savedUser.email,
+                role: savedUser.role
+            }, 
+            token 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Registration failed' });
@@ -55,39 +69,49 @@ router.put('/update/:id', (req,res) => {
     });
 })
 
-router.post('/authenticate', (req, res) => {
-    Model.findOne(req.body)
-        .then((result) => {
-            if (result) {
-                // email and password matched
-                // generate token
+// Login route
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Find user by email
+        const member = await Model.findOne({ email });
+        if (!member) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
 
-                const { _id, email, password } = result;
-                const payload = { _id, email, password }
+        // Check password
+        const isValidPassword = await bcrypt.compare(password, member.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
 
-                jwt.sign(
-                    payload,
-                    process.env.JWT_SECRET,
-                    { expiresIn: '6h' },
-                    (err, token) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).json(err);
-                        } else {
-                            res.status(200).json({ token });
-                        }
-                    }
-                )
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                id: member._id, 
+                email: member.email, 
+                role: member.role, 
+                name: member.name 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
 
-            } else {
-                res.status(401).json({ message: 'Invalid email or password' });
-            }
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).json(err);
+        // Send response
+        res.json({
+            member: {
+                _id: member._id,
+                name: member.name,
+                email: member.email,
+                role: member.role
+            },
+            token
         });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
-
-
 
 module.exports = router;

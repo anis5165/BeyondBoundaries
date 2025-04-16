@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import Profile from './Profile';
 
 const Navbar = () => {
-    const { user, loading } = useAuth();
+    const { currentMember, loading } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -62,10 +62,10 @@ const Navbar = () => {
 
                     {/* User Profile or Auth Links */}
                     <div className="flex items-center">
-                        {user ? (
+                        {currentMember ? (
                             <Profile />
                         ) : (
-                            <div className="flex space-x-4">
+                            <div className="flex items-center space-x-4">
                                 <Link
                                     href="/login"
                                     className="text-gray-600 hover:text-gray-900"

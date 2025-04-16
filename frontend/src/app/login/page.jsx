@@ -2,28 +2,45 @@
 import axios from 'axios';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import React from 'react'
+import { useAuth } from '@/context/AuthContext';
+import React from 'react';
 import toast from 'react-hot-toast';
+import * as Yup from 'yup';
 
 const Login = () => {
-
-    const router = useRouter()
+    const { setCurrentMember } = useAuth();
+    const router = useRouter();
 
     const loginForm = useFormik({
         initialValues: {
-            email: "",
-            password: ""
+            email: '',
+            password: ''
         },
-        onSubmit: async (values, { resetForm }) => {
+        validationSchema: Yup.object({
+            email: Yup.string().email('Invalid email address').required('Email is required'),
+            password: Yup.string().required('Password is required')
+        }),
+        onSubmit: async (values) => {
             try {
-                const response = await axios.post('http://localhost:5000/user/authenticate', values);
-                console.log(response.status);
-                router.push('/');
-                resetForm();
-                toast.success('Login Successful');
-            } catch (err) {
-                console.error(err);
-                toast.error(err.response?.data?.message || 'Login Failed');
+                const response = await axios.post('http://localhost:5000/user/login', values);
+                const { member, token } = response.data;
+
+                if (member && token) {
+                    localStorage.setItem('member', JSON.stringify(member));
+                    localStorage.setItem('token', token);
+                    setCurrentMember(member);
+
+                    toast.success('Login successful');
+
+                    if (member.role === 'business') {
+                        router.push('/businessOwnerDetailsForm');
+                    } else {
+                        router.push('/partnerDetailsForm');
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                toast.error(error.response?.data?.message || 'Login failed');
             }
         }
     });
@@ -68,7 +85,7 @@ const Login = () => {
                 </div>
             </div>
         </>
-    )
+    );
 }
 
-export default Login
+export default Login;

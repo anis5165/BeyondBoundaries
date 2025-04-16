@@ -1,36 +1,16 @@
 'use client';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 const PartnerDetailsForm = () => {
     const router = useRouter();
-    const [userData, setUserData] = useState(null);
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-            return;
-        }
-
-        try {
-            const decoded = jwt_decode(token);
-            setUserData(decoded);
-        } catch (error) {
-            console.error('Token decode error:', error);
-            router.push('/login');
-        }
-    }, []);
 
     const detailsForm = useFormik({
         initialValues: {
-            fullName: userData?.name || '',
-            email: userData?.email || '',
             name: '',
+            email: '',
             country: '',
             companyName: '',
             industry: '',
@@ -43,18 +23,11 @@ const PartnerDetailsForm = () => {
             helpDescription: '',
             pastExperience: ''
         },
-        enableReinitialize: true,
         onSubmit: async (values, { resetForm }) => {
             try {
-                const token = localStorage.getItem('token');
                 const response = await axios.post(
                     'http://localhost:5000/partner/add',
-                    values,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
+                    values
                 );
 
                 if (response.data) {

@@ -1,38 +1,54 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import jwtDecode from 'jwt-decode'; // Updated import
 
-const AuthContext = createContext({
-    user: null,
-    loading: true,
-    setUser: () => {},
-});
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [currentMember, setCurrentMember] = useState(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         try {
-            if (typeof window !== 'undefined') {
-                const userData = localStorage.getItem('user');
-                if (userData) {
-                    setUser(JSON.parse(userData));
+            const token = localStorage.getItem('token');
+            const memberData = localStorage.getItem('member');
+
+            if (token && memberData) {
+                // Check token expiration
+                const decodedToken = jwtDecode(token); // Updated function call
+                const currentTime = Date.now() / 1000;
+
+                if (decodedToken.exp > currentTime) {
+                    setCurrentMember(JSON.parse(memberData));
+                } else {
+                    // Token expired
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('member');
+                    router.push('/login');
                 }
             }
         } catch (error) {
             console.error('Auth check failed:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('member');
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [router]); // Added router to dependency array
+
+    const value = {
+        currentMember,
+        setCurrentMember,
+        loading
+    };
 
     return (
-        <AuthContext.Provider value={{ user, loading, setUser }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 }
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);

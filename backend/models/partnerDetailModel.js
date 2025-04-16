@@ -1,8 +1,8 @@
-const mongoose = require('../connection');
-const { Schema, model } = mongoose;
-const clientdetailsSchema = new Schema({
+const {Schema, model} = require("../connection");
+
+const partnerSchema = new Schema({
     name: {type: String, required: true},
-    email: {type: String, required: true},
+    email: {type: String, required: true, unique: true},
     country: {type: String, required: true},
     companyName: {type: String, required: true},
     industry: {type: String, required: true},
@@ -15,5 +15,5 @@ const clientdetailsSchema = new Schema({
     helpDescription: {type: String},
 });
 
-module.exports = model('clientdetails', clientdetailsSchema);
+module.exports = model('partners', partnerSchema);
 

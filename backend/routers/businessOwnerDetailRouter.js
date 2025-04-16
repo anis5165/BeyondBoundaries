@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const BusinessOwner = require('../models/businessOwnerDetailModel');
+const Model = require('../models/businessOwnerDetailModel');
 
 router.post('/add', (req,res) => {
     console.log(req.body);
 
-    new BusinessOwner(req.body).save()
+    new Model(req.body).save()
     .then((result) => {
         res.json(result);
     }).catch((err) => {
@@ -16,7 +16,7 @@ router.post('/add', (req,res) => {
 
 router.get('/getall', async (req, res) => {
     try {
-        const owners = await BusinessOwner.find();
+        const owners = await Model.find();
         console.log('Found owners:', owners);
         res.json(owners);
     } catch (error) {
@@ -27,13 +27,26 @@ router.get('/getall', async (req, res) => {
 
 router.get('/getbyid/:id', async (req, res) => {
     try {
-        const owner = await BusinessOwner.findById(req.params.id);
-        if (!owner) {
-            return res.status(404).json({ message: 'Owner not found' });
+        const profile = await Model.findById(req.params.id);
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
         }
-        res.json(owner);
+        res.json(profile);
     } catch (error) {
-        console.error('Error fetching owner by ID:', error);
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/getbyemail/:email', async (req, res) => {
+    try {
+        const profile = await Model.findOne({ email: req.params.email });
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+        res.json(profile);
+    } catch (error) {
+        console.error('Error fetching profile:', error);
         res.status(500).json({ message: error.message });
     }
 });
