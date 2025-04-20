@@ -2,17 +2,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 const Profile = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { currentMember, logout } = useAuth();
-    const profileRef = useRef(null);
-    const router = useRouter();
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (profileRef.current && !profileRef.current.contains(event.target)) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
             }
         };
@@ -21,15 +19,10 @@ const Profile = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleViewProfile = () => {
-        localStorage.setItem('viewProfileType', currentMember.role);
-        router.push(`/view-profile/${currentMember._id}`);
-    };
-
     if (!currentMember) return null;
 
     return (
-        <div className="relative" ref={profileRef}>
+        <div className="relative" ref={dropdownRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center space-x-2"
@@ -48,23 +41,69 @@ const Profile = () => {
                     
                     {currentMember.role === 'business' ? (
                         <>
-                            <button
-                                onClick={handleViewProfile}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            <Link 
+                                href="/business-profile" 
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setIsOpen(false)}
                             >
-                                View Profile
-                            </button>
+                                Business Profile
+                            </Link>
+                            <Link 
+                                href="/business-dashboard" 
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Dashboard
+                            </Link>
                         </>
                     ) : (
                         <>
-                            <Link href="/partner-profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <Link 
+                                href="/partner-profile" 
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setIsOpen(false)}
+                            >
                                 Partner Profile
                             </Link>
+                            <Link 
+                                href="/partner-dashboard" 
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Dashboard
+                            </Link>
                         </>
-                    )} 
-                    
+                    )}
+
+                    <Link 
+                        href="/connections" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        My Connections
+                    </Link>
+
+                    <Link 
+                        href="/messages" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        Messages
+                    </Link>
+
+                    <Link 
+                        href="/settings" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        Settings
+                    </Link>
+
                     <button
-                        onClick={logout}
+                        onClick={() => {
+                            setIsOpen(false);
+                            logout();
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     >
                         Logout

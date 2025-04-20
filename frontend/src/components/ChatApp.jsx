@@ -1,120 +1,112 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { io } from 'socket.io-client'
-import axios from 'axios'
-import { toast } from 'react-hot-toast'
+'use client';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { io } from 'socket.io-client';
+import { messageAPI } from '@/utils/api';
+import { timeAgo } from '@/utils/helpers';
 
 const ChatApp = ({ receiverId, receiverName, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [socket, setSocket] = useState(null);
+    const { currentMember } = useAuth();
     const messagesEndRef = useRef(null);
-    const [user, setUser] = useState(null);
+    const chatRoomId = [currentMember._id, receiverId].sort().join('-');
 
     useEffect(() => {
-        try {
-            const newSocket = io('http://localhost:5000');
-            setSocket(newSocket);
-
-            // Get user from localStorage
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (userData) {
-                setUser(userData);
-                
-                // Join chat room
-                const chatRoom = [userData._id, receiverId].sort().join('-');
-                newSocket.emit('join chat', chatRoom);
-
-                // Load chat history
-                fetchChatHistory(userData._id, receiverId);
-            }
-
-            return () => newSocket.close();
-        } catch (error) {
-            console.error('Socket connection error:', error);
-            toast.error('Failed to connect to chat server');
-        }
-    }, [receiverId]);
-
-    const fetchChatHistory = async (userId1, userId2) => {
-        try {
-            const response = await axios.get(`http://localhost:5000/message/chat/${userId1}/${userId2}`);
-            setMessages(response.data);
-        } catch (error) {
-            console.error('Error fetching chat history:', error);
-            toast.error('Failed to load chat history');
-        }
-    };
-
-    // Scroll to bottom of messages
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    // Listen for private messages
-    useEffect(() => {
-        if (!socket) return;
-
-        socket.on('private message', (message) => {
-            setMessages(prev => [...prev, message]);
+        const socketInstance = io('http://localhost:5000', {
+            query: { userId: currentMember._id }
         });
 
-        return () => {
-            socket.off('private message');
-        };
-    }, [socket]);
+        socketInstance.emit('join chat', chatRoomId);
 
-    const sendMessage = (e) => {
+        socketInstance.on('private message', (message) => {
+            setMessages(prev => [...prev, message]);
+            scrollToBottom();
+        });
+
+        setSocket(socketInstance);
+
+        return () => {
+            socketInstance.emit('leave chat', chatRoomId);
+            socketInstance.disconnect();
+        };
+    }, [currentMember._id, chatRoomId]);
+
+    useEffect(() => {
+        loadMessages();
+    }, [currentMember._id, receiverId]);
+
+    const loadMessages = async () => {
+        try {
+            const response = await messageAPI.getMessages(currentMember._id, receiverId);
+            setMessages(response.data);
+            scrollToBottom();
+        } catch (error) {
+            console.error('Error loading messages:', error);
+        }
+    };
+
+    const sendMessage = async (e) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
-        const messageData = {
-            text: newMessage,
-            sender: user?._id,
-            senderName: user?.name,
-            timestamp: new Date().toISOString()
-        };
+        try {
+            const messageData = {
+                sender: currentMember._id,
+                receiver: receiverId,
+                text: newMessage,
+                senderName: currentMember.name
+            };
 
-        socket?.emit('private message', messageData);
-        setNewMessage('');
+            const response = await messageAPI.sendMessage(messageData);
+            socket?.emit('private message', {
+                ...response.data,
+                chatRoom: chatRoomId
+            });
+
+            setMessages(prev => [...prev, response.data]);
+            setNewMessage('');
+            scrollToBottom();
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     return (
         <div className="flex flex-col h-full">
             {/* Chat Header */}
             <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
-                <div>
-                    <h2 className="text-xl font-semibold">Chat with {receiverName}</h2>
-                    {user && <p className="text-sm">You: {user.name}</p>}
-                </div>
+                <h2 className="text-lg font-semibold">{receiverName}</h2>
                 <button 
                     onClick={onClose}
-                    className="text-white hover:text-gray-200"
+                    className="text-white hover:text-gray-200 text-xl"
                 >
                     ×
                 </button>
             </div>
 
-            {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message, index) => (
                     <div 
-                        key={index}
-                        className={`flex ${message.sender === user?._id ? 'justify-end' : 'justify-start'}`}
+                        key={message._id || index}
+                        className={`flex ${message.sender === currentMember._id ? 'justify-end' : 'justify-start'}`}
                     >
                         <div 
                             className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                                message.sender === user?._id 
+                                message.sender === currentMember._id 
                                     ? 'bg-blue-600 text-white' 
                                     : 'bg-gray-200'
                             }`}
                         >
-                            <p className="break-words">{message.text}</p>
-                            <p className="text-xs text-right mt-1 opacity-70">
-                                {new Date(message.timestamp).toLocaleTimeString()}
+                            <p className="text-sm">{message.text}</p>
+                            <p className="text-xs opacity-70 mt-1">
+                                {timeAgo(message.timestamp)}
                             </p>
                         </div>
                     </div>
@@ -123,7 +115,7 @@ const ChatApp = ({ receiverId, receiverName, onClose }) => {
             </div>
 
             {/* Message Input */}
-            <form onSubmit={sendMessage} className="p-4 bg-white border-t">
+            <form onSubmit={sendMessage} className="border-t p-4">
                 <div className="flex gap-2">
                     <input
                         type="text"
@@ -134,15 +126,14 @@ const ChatApp = ({ receiverId, receiverName, onClose }) => {
                     />
                     <button
                         type="submit"
-                        disabled={!user}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Send
                     </button>
                 </div>
             </form>
         </div>
-    )
-}
+    );
+};
 
-export default ChatApp
+export default ChatApp;

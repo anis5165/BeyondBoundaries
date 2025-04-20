@@ -28,7 +28,7 @@ const BrowserPage = () => {
 
     useEffect(() => {
         fetchBrowser();
-    }, []);
+    }, []);   
 
     // Get unique business types
     const businessTypes = ['all', ...new Set(businessOwner.map(owner => owner.businessType))];

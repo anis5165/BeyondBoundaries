@@ -50,4 +50,23 @@ router.get('/getbyid/:id', async (req, res) => {
     }
 });
 
+router.put('/update/:id', async (req, res) => {
+    try {
+        const updatedProfile = await Model.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedProfile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+
+        res.json(updatedProfile);
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

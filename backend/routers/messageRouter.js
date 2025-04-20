@@ -1,84 +1,31 @@
 const express = require('express');
-const router = express.Router();
-const Message = require('../models/messageModel');
+const { protect } = require('../middleware/authMiddleware');
+const { 
+    getMessages, 
+    sendMessage, 
+    markAsRead, 
+    getUnreadCount,
+    getChatPreviews 
+} = require('../controllers/chatController');
 
-// Get all messages
-router.get('/getall', async (req, res) => {
-    try {
-        const messages = await Message.find().sort({ timestamp: 1 });
-        res.json(messages);
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.status(500).json({ error: 'Failed to fetch messages' });
-    }
-});
+const router = express.Router();
+
+// Protect all routes
+router.use(protect);
 
 // Get chat messages between two users
-router.get('/chat/:userId1/:userId2', async (req, res) => {
-    try {
-        const { userId1, userId2 } = req.params;
-        const chatRoom = [userId1, userId2].sort().join('-');
+router.get('/chat/:userId1/:userId2', getMessages);
 
-        const messages = await Message.find({ chatRoom })
-            .sort({ timestamp: 1 });
-        res.json(messages);
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.status(500).json({ error: 'Failed to fetch messages' });
-    }
-});
+// Send a new message
+router.post('/add', sendMessage);
 
-// Add new message
-router.post('/add', async (req, res) => {
-    try {
-        const { sender, receiver, text, senderName } = req.body;
-        const chatRoom = [sender, receiver].sort().join('-');
+// Mark message as read
+router.put('/:messageId/read', markAsRead);
 
-        const newMessage = new Message({
-            sender,
-            receiver,
-            text,
-            senderName,
-            chatRoom
-        });
+// Get unread messages count
+router.get('/unread', getUnreadCount);
 
-        const savedMessage = await newMessage.save();
-        res.status(201).json(savedMessage);
-    } catch (error) {
-        console.error('Error saving message:', error);
-        res.status(500).json({ error: 'Failed to save message' });
-    }
-});
-
-// Get all chat rooms for a user
-router.get('/chats/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const messages = await Message.find({
-            $or: [{ sender: userId }, { receiver: userId }]
-        })
-        .sort({ timestamp: -1 })
-        .populate('sender receiver', 'name');
-
-        // Get unique chat rooms
-        const chats = messages.reduce((acc, msg) => {
-            const otherUser = msg.sender._id.toString() === userId ? msg.receiver : msg.sender;
-            if (!acc.find(chat => chat.userId === otherUser._id.toString())) {
-                acc.push({
-                    userId: otherUser._id,
-                    name: otherUser.name,
-                    lastMessage: msg.text,
-                    timestamp: msg.timestamp
-                });
-            }
-            return acc;
-        }, []);
-
-        res.json(chats);
-    } catch (error) {
-        console.error('Error fetching chats:', error);
-        res.status(500).json({ error: 'Failed to fetch chats' });
-    }
-});
+// Get chat history preview
+router.get('/previews', getChatPreviews);
 
 module.exports = router;

@@ -1,13 +1,12 @@
-const mongoose = require('mongoose');
-require("dotenv").config();
-const url = process.env.MONGO_URI;
+// const mongoose = require('mongoose');
+// require('dotenv').config();
 
-mongoose.connect(url)
-.then((result) => {
-    console.log('Connected to the database');
-}).catch((err) => {
-    console.log('Error connecting to the database', err);
-});
+// mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/beyondboundaries')
+//     .then(() => {
+//         console.log('Connected to MongoDB');
+//     })
+//     .catch((err) => {
+//         console.error('MongoDB connection error:', err);
+//     });
 
-
-module.exports = mongoose;
+// module.exports = mongoose;
